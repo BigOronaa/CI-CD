@@ -1,9 +1,6 @@
-import js from "@eslint/js";
-import globals from "globals";
-
 export default [
   {
-    ignores: ["node_modules/**"],
+    ignores: ["node_modules/**", "images/**", "jenkins-pipeline-lab/**"],
   },
   js.configs.recommended,
   {
@@ -11,8 +8,8 @@ export default [
       ecmaVersion: "latest",
       sourceType: "module",
       globals: {
-        ...globals.node,   // allow console, process, require, module
-        ...globals.jest,   // allow test, expect, describe
+        ...globals.node,
+        ...globals.jest,
       },
     },
   },
