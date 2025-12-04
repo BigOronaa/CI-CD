@@ -1,0 +1,27 @@
+{
+  "name": "ci-cd",
+  "version": "1.0.0",
+  "description": "Clean CI/CD workflow test",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BigOronaa/CI-CD.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BigOronaa/CI-CD/issues"
+  },
+  "homepage": "https://github.com/BigOronaa/CI-CD#readme",
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "@eslint/js": "^9.39.1",
+    "jest": "^30.2.0"
+  }
+}
