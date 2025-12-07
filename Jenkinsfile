@@ -84,4 +84,30 @@ pipeline {
             steps {
                 script {
                     def startTime = System.currentTimeMillis()
-                    withCredentials([string(credentialsId]()
+                    withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
+                        echo "Deploying to production at ${env.PRODUCTION_URL} using secret key."
+                        sh 'echo "Deployment to production completed successfully."'
+                    }
+                    def duration = (System.currentTimeMillis() - startTime)/1000
+                    echo "Stage Deploy to Production duration: ${duration} sec"
+                    currentBuild.description += " | Production: ${duration} sec"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline completed. Dashboard logs updated."
+            // Here we simulate metrics you would later see in a real dashboard
+        }
+        failure {
+            echo 'Pipeline failed! Triggering rollback...'
+            sh 'echo "Rollback to last stable version completed."'
+            echo 'Sending failure notification to team (simulated)...'
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+    }
+}
