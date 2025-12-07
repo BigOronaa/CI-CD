@@ -24,9 +24,8 @@ pipeline {
             steps {
                 script {
                     echo 'Running tests...'
-                    // Simulate test success/failure
-                    // Use 0 for success, 1 for failure to test rollback
-                    def testStatus = sh(script: 'exit 0', returnStatus: true) 
+                    // Simulate failure randomly for learning purposes
+                    def testStatus = sh(script: 'if [ $((RANDOM % 2)) -eq 0 ]; then exit 0; else exit 1; fi', returnStatus: true)
                     if (testStatus != 0) {
                         error("Tests failed!")  // triggers failure handling
                     } else {
