@@ -4,51 +4,72 @@ pipeline {
     environment {
         STAGING_URL = "staging.example.com"
         PRODUCTION_URL = "prod.example.com"
-        KEY = credentials('MY_API_KEY') // your secret key
+        KEY = credentials('MY_API_KEY')
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                checkout scm
+                script {
+                    def startTime = System.currentTimeMillis()
+                    checkout scm
+                    def duration = (System.currentTimeMillis() - startTime)/1000
+                    echo "Stage Checkout SCM duration: ${duration} sec"
+                    currentBuild.description = "Checkout: ${duration} sec"
+                }
             }
         }
 
-        stage('Build & Test') {
-            parallel {
-                stage('Build') {
-                    steps {
-                        echo 'Installing dependencies...'
-                        sh 'echo "Dependencies installed successfully."'
-                    }
+        stage('Build') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    echo 'Installing dependencies...'
+                    sh 'echo "Dependencies installed successfully."'
+                    def duration = (System.currentTimeMillis() - startTime)/1000
+                    echo "Stage Build duration: ${duration} sec"
+                    currentBuild.description += " | Build: ${duration} sec"
                 }
-                stage('Unit Tests') {
-                    steps {
-                        echo 'Running unit tests...'
-                        sh 'echo "Unit tests passed!"'
-                    }
-                }
-                stage('Lint') {
-                    steps {
-                        echo 'Running code linting...'
-                        sh 'echo "Lint passed!"'
-                    }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+                    echo 'Running tests...'
+                    sh 'echo "All tests passed!"'
+                    def duration = (System.currentTimeMillis() - startTime)/1000
+                    echo "Stage Test duration: ${duration} sec"
+                    currentBuild.description += " | Test: ${duration} sec"
                 }
             }
         }
 
         stage('Package') {
             steps {
-                echo 'Packaging application...'
-                sh 'echo "Application packaged successfully."'
+                script {
+                    def startTime = System.currentTimeMillis()
+                    echo 'Packaging application...'
+                    sh 'echo "Application packaged successfully."'
+                    def duration = (System.currentTimeMillis() - startTime)/1000
+                    echo "Stage Package duration: ${duration} sec"
+                    currentBuild.description += " | Package: ${duration} sec"
+                }
             }
         }
 
         stage('Deploy to Staging') {
             steps {
-                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
-                    echo "Deploying to staging at ${env.STAGING_URL} using secret key."
-                    sh 'echo "Deployment to staging completed."'
+                script {
+                    def startTime = System.currentTimeMillis()
+                    withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
+                        echo "Deploying to staging at ${env.STAGING_URL} using secret key."
+                        sh 'echo "Deployment to staging completed."'
+                    }
+                    def duration = (System.currentTimeMillis() - startTime)/1000
+                    echo "Stage Deploy to Staging duration: ${duration} sec"
+                    currentBuild.description += " | Staging: ${duration} sec"
                 }
             }
         }
@@ -61,38 +82,6 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
-                    echo "Deploying to production at ${env.PRODUCTION_URL} using secret key."
-                    sh 'echo "Deployment to production completed successfully."'
-                }
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo 'Pipeline failed! Initiating automated rollback...'
-            script {
-                // Rollback to previous commit
-                def previousCommit = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
-                echo "Rolling back to previous commit: ${previousCommit}"
-                sh "git checkout ${previousCommit}"
-                echo 'Rebuilding previous stable version...'
-                sh 'echo "Dependencies installed successfully."'
-                sh 'echo "Application packaged successfully."'
-                echo 'Redeploying to staging...'
-                sh 'echo "Deployment to staging completed."'
-                echo 'Redeploying to production...'
-                sh 'echo "Deployment to production completed successfully."'
-                echo 'Rollback and redeployment completed.'
-            }
-            echo 'Sending failure notification to team (simulated)...'
-        }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        unstable {
-            echo 'Pipeline completed with warnings.'
-        }
-    }
-}
+                script {
+                    def startTime = System.currentTimeMillis()
+                    withCredentials([string(credentialsId]()
