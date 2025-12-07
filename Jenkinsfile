@@ -24,16 +24,12 @@ pipeline {
             steps {
                 script {
                     echo 'Running tests...'
-                    
-                    // Simulate test failure
-                    def testPassed = false
-
-                    if (!testPassed) {
-                        echo 'Tests failed! Triggering rollback...'
-                        // Fail the build so post { failure { … } } runs
-                        error("Tests did not pass")
+                    // Simulate test success/failure
+                    def testStatus = sh(script: 'echo 0', returnStatus: true) // 0 = success
+                    if (testStatus != 0) {
+                        error("Tests failed!")  // triggers failure handling
                     } else {
-                        echo 'All tests passed!'
+                        echo "All tests passed!"
                     }
                 }
             }
@@ -67,13 +63,19 @@ pipeline {
         }
     }
 
+    // ERROR HANDLING
     post {
         failure {
-            echo 'Build failed! Executing rollback...'
-            sh 'echo "Rollback completed successfully."'
+            echo 'Pipeline encountered an error!'
+            echo 'Simulating rollback...'
+            sh 'echo "Rollback to last stable version completed."'
+            echo 'Sending failure notification to team (simulated)...'
         }
         success {
             echo 'Pipeline completed successfully!'
+        }
+        unstable {
+            echo 'Pipeline completed with warnings.'
         }
     }
 }
