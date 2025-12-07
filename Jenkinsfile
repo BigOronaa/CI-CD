@@ -24,13 +24,8 @@ pipeline {
             steps {
                 script {
                     echo 'Running tests...'
-                    // Simulate failure randomly for learning purposes
-                    def testStatus = sh(script: 'if [ $((RANDOM % 2)) -eq 0 ]; then exit 0; else exit 1; fi', returnStatus: true)
-                    if (testStatus != 0) {
-                        error("Tests failed!")  // triggers failure handling
-                    } else {
-                        echo "All tests passed!"
-                    }
+                    // FORCE FAILURE to simulate rollback
+                    error("Simulated test failure!")  
                 }
             }
         }
@@ -44,10 +39,8 @@ pipeline {
 
         stage('Deploy to Staging') {
             steps {
-                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
-                    echo "Deploying to staging at ${env.STAGING_URL} using secret key."
-                    sh 'echo "Deployment to staging completed."'
-                }
+                echo "Deploying to staging at ${env.STAGING_URL}..."
+                sh 'echo "Deployment to staging completed."'
             }
         }
 
@@ -59,10 +52,8 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
-                    echo "Deploying to production at ${env.PRODUCTION_URL} using secret key."
-                    sh 'echo "Deployment to production completed successfully."'
-                }
+                echo "Deploying to production at ${env.PRODUCTION_URL}..."
+                sh 'echo "Deployment to production completed successfully."'
             }
         }
     }
