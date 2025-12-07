@@ -44,8 +44,10 @@ pipeline {
 
         stage('Deploy to Staging') {
             steps {
-                echo "Deploying to staging at ${env.STAGING_URL}..."
-                sh 'echo "Deployment to staging completed."'
+                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
+                    echo "Deploying to staging at ${env.STAGING_URL} using secret key."
+                    sh 'echo "Deployment to staging completed."'
+                }
             }
         }
 
@@ -57,13 +59,15 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                echo "Deploying to production at ${env.PRODUCTION_URL}..."
-                sh 'echo "Deployment to production completed successfully."'
+                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
+                    echo "Deploying to production at ${env.PRODUCTION_URL} using secret key."
+                    sh 'echo "Deployment to production completed successfully."'
+                }
             }
         }
     }
 
-    // ERROR HANDLING
+    // ERROR HANDLING & ROLLBACK
     post {
         failure {
             echo 'Pipeline encountered an error!'
