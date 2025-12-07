@@ -4,6 +4,7 @@ pipeline {
     environment {
         STAGING_URL = "staging.example.com"
         PRODUCTION_URL = "prod.example.com"
+        KEY = credentials('MY_API_KEY') // your secret key
     }
 
     stages {
@@ -13,27 +14,28 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Installing dependencies...'
-                sh 'echo "Dependencies installed successfully."'
+        stage('Build & Test') {
+            parallel {
+                stage('Build') {
+                    steps {
+                        echo 'Installing dependencies...'
+                        sh 'echo "Dependencies installed successfully."'
+                    }
+                }
+                stage('Unit Tests') {
+                    steps {
+                        echo 'Running unit tests...'
+                        sh 'echo "Unit tests passed!"'
+                    }
+                }
+                stage('Lint') {
+                    steps {
+                        echo 'Running code linting...'
+                        sh 'echo "Lint passed!"'
+                    }
+                }
             }
         }
-
-        stage('Test') {
-    steps {
-        script {
-            echo 'Running tests...'
-            // Simulate test success (no forced failure)
-            def testStatus = sh(script: 'echo 0', returnStatus: true) // 0 = success
-            if (testStatus != 0) {
-                error("Tests failed!")  // triggers failure handling if a real failure occurs
-            } else {
-                echo "All tests passed!"
-            }
-        }
-    }
-}
 
         stage('Package') {
             steps {
@@ -44,8 +46,10 @@ pipeline {
 
         stage('Deploy to Staging') {
             steps {
-                echo "Deploying to staging at ${env.STAGING_URL}..."
-                sh 'echo "Deployment to staging completed."'
+                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
+                    echo "Deploying to staging at ${env.STAGING_URL} using secret key."
+                    sh 'echo "Deployment to staging completed."'
+                }
             }
         }
 
@@ -57,8 +61,10 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                echo "Deploying to production at ${env.PRODUCTION_URL}..."
-                sh 'echo "Deployment to production completed successfully."'
+                withCredentials([string(credentialsId: 'MY_API_KEY', variable: 'KEY')]) {
+                    echo "Deploying to production at ${env.PRODUCTION_URL} using secret key."
+                    sh 'echo "Deployment to production completed successfully."'
+                }
             }
         }
     }
@@ -66,31 +72,20 @@ pipeline {
     post {
         failure {
             echo 'Pipeline failed! Initiating automated rollback...'
-
             script {
-                // Step 1: Get previous commit
-                def previousCommit = sh(
-                    script: "git rev-parse HEAD~1",
-                    returnStdout: true
-                ).trim()
-                
+                // Rollback to previous commit
+                def previousCommit = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
                 echo "Rolling back to previous commit: ${previousCommit}"
-                
-                // Step 2: Checkout previous commit
                 sh "git checkout ${previousCommit}"
-                
-                // Step 3: Rebuild and redeploy previous stable version
-                echo "Rebuilding previous stable version..."
+                echo 'Rebuilding previous stable version...'
                 sh 'echo "Dependencies installed successfully."'
                 sh 'echo "Application packaged successfully."'
-                echo "Redeploying to staging..."
+                echo 'Redeploying to staging...'
                 sh 'echo "Deployment to staging completed."'
-                echo "Redeploying to production..."
+                echo 'Redeploying to production...'
                 sh 'echo "Deployment to production completed successfully."'
-                
                 echo 'Rollback and redeployment completed.'
             }
-
             echo 'Sending failure notification to team (simulated)...'
         }
         success {
