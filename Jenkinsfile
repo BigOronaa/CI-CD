@@ -21,19 +21,19 @@ pipeline {
         }
 
         stage('Test') {
-            steps {
-                script {
-                    echo 'Running tests...'
-                    // Simulate test success/failure
-                    def testStatus = sh(script: 'exit 1', returnStatus: true) // force failure for testing rollback
-                    if (testStatus != 0) {
-                        error("Tests failed!")  // triggers failure handling
-                    } else {
-                        echo "All tests passed!"
-                    }
-                }
+    steps {
+        script {
+            echo 'Running tests...'
+            // Simulate test success (no forced failure)
+            def testStatus = sh(script: 'echo 0', returnStatus: true) // 0 = success
+            if (testStatus != 0) {
+                error("Tests failed!")  // triggers failure handling if a real failure occurs
+            } else {
+                echo "All tests passed!"
             }
         }
+    }
+}
 
         stage('Package') {
             steps {
