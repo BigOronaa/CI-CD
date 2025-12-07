@@ -20,16 +20,20 @@ pipeline {
             }
         }
 
-       stage('Test') {
-    steps {
-        script {
-            echo 'Running tests...'
-            // Simulate a test failure
-            sh 'exit 1'  // This forces the test stage to fail
+        stage('Test') {
+            steps {
+                script {
+                    echo 'Running tests...'
+                    // Simulate test success/failure
+                    def testStatus = sh(script: 'echo 0', returnStatus: true) // 0 = success
+                    if (testStatus != 0) {
+                        error("Tests failed!")  // triggers failure handling
+                    } else {
+                        echo "All tests passed!"
+                    }
+                }
+            }
         }
-    }
-}
-
 
         stage('Package') {
             steps {
