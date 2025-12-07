@@ -25,7 +25,8 @@ pipeline {
                 script {
                     echo 'Running tests...'
                     // Simulate test success/failure
-                    def testStatus = sh(script: 'echo 0', returnStatus: true) // 0 = success
+                    // Use 0 for success, 1 for failure to test rollback
+                    def testStatus = sh(script: 'exit 0', returnStatus: true) 
                     if (testStatus != 0) {
                         error("Tests failed!")  // triggers failure handling
                     } else {
@@ -67,7 +68,6 @@ pipeline {
         }
     }
 
-    // ERROR HANDLING & ROLLBACK
     post {
         failure {
             echo 'Pipeline encountered an error!'
