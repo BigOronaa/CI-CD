@@ -24,8 +24,13 @@ pipeline {
             steps {
                 script {
                     echo 'Running tests...'
-                    // FORCE FAILURE to simulate rollback
-                    error("Simulated test failure!")  
+                    // Simulate test success/failure
+                    def testStatus = sh(script: 'exit 1', returnStatus: true) // force failure for testing rollback
+                    if (testStatus != 0) {
+                        error("Tests failed!")  // triggers failure handling
+                    } else {
+                        echo "All tests passed!"
+                    }
                 }
             }
         }
@@ -60,9 +65,32 @@ pipeline {
 
     post {
         failure {
-            echo 'Pipeline encountered an error!'
-            echo 'Simulating rollback...'
-            sh 'echo "Rollback to last stable version completed."'
+            echo 'Pipeline failed! Initiating automated rollback...'
+
+            script {
+                // Step 1: Get previous commit
+                def previousCommit = sh(
+                    script: "git rev-parse HEAD~1",
+                    returnStdout: true
+                ).trim()
+                
+                echo "Rolling back to previous commit: ${previousCommit}"
+                
+                // Step 2: Checkout previous commit
+                sh "git checkout ${previousCommit}"
+                
+                // Step 3: Rebuild and redeploy previous stable version
+                echo "Rebuilding previous stable version..."
+                sh 'echo "Dependencies installed successfully."'
+                sh 'echo "Application packaged successfully."'
+                echo "Redeploying to staging..."
+                sh 'echo "Deployment to staging completed."'
+                echo "Redeploying to production..."
+                sh 'echo "Deployment to production completed successfully."'
+                
+                echo 'Rollback and redeployment completed.'
+            }
+
             echo 'Sending failure notification to team (simulated)...'
         }
         success {
