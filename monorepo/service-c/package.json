@@ -1,0 +1,8 @@
+{
+  "name": "service-c",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo Building Service C",
+    "test": "echo Testing Service C"
+  }
+}

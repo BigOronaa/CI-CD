@@ -1,0 +1,72 @@
+name: Monorepo CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changed services
+        id: filter
+        run: |
+          # Detect folders in monorepo that changed
+          CHANGES=$(git diff --name-only HEAD~1 HEAD | cut -d'/' -f1 | sort -u)
+
+          SERVICES=""
+          for folder in service-a service-b service-c; do
+            if echo "$CHANGES" | grep -q "$folder"; then
+              SERVICES="$SERVICES\"$folder\","
+            fi
+          done
+
+          SERVICES="[${SERVICES%?}]"
+          echo "changes=$SERVICES" >> $GITHUB_OUTPUT
+
+  build-and-test:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: ${{ needs.detect-changes.outputs.services != '[]' }}
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.service }}
+          npm install
+
+      - name: Build service
+        run: |
+          cd ${{ matrix.service }}
+          npm run build
+
+      - name: Test service
+        run: |
+          cd ${{ matrix.service }}
+          npm run test
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: ${{ needs.detect-changes.outputs.services != '[]' }}
+
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+
+    steps:
+      - name: Deploy service
+        run: |
+          echo "Deploying ${{ matrix.service }}..."
