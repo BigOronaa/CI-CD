@@ -1,72 +1,35 @@
-name: Monorepo CI/CD
+name: Monorepo CI
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      services: ${{ steps.filter.outputs.changes }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # full history for git diff
-
-      - name: Detect changed services
-        id: filter
-        run: |
-          # If HEAD~1 exists, detect changes; otherwise, assume all services changed
-          if git rev-parse HEAD~1 >/dev/null 2>&1; then
-            CHANGES=$(git diff --name-only HEAD~1 HEAD | cut -d'/' -f1 | sort -u)
-          else
-            CHANGES="service-a
-service-b
-service-c"
-          fi
-
-          SERVICES=""
-          for folder in service-a service-b service-c; do
-            if echo "$CHANGES" | grep -q "$folder"; then
-              SERVICES="$SERVICES\"$folder\","
-            fi
-          done
-
-          SERVICES="[${SERVICES%?}]"
-          echo "changes=$SERVICES" >> $GITHUB_OUTPUT
-          echo "Detected changed services: $SERVICES"
-
   build-and-test:
-    needs: detect-changes
     runs-on: ubuntu-latest
-    if: ${{ needs.detect-changes.outputs.services != '[]' }}
+
     strategy:
       matrix:
-        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+        service: [service-a, service-b, service-c]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Build service
+      # Optional: Set Node version in case you add dependencies later
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Build Service
         run: npm run build
         working-directory: ${{ matrix.service }}
 
-      - name: Test service
+      - name: Test Service
         run: npm run test
         working-directory: ${{ matrix.service }}
-
-  deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: ${{ needs.detect-changes.outputs.services != '[]' }}
-    strategy:
-      matrix:
-        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
-
-    steps:
-      - name: Deploy service
-        run: echo "Deploying ${{ matrix.service }}..."
