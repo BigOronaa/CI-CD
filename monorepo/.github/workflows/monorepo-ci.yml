@@ -9,12 +9,12 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      services: ${{ steps.filter.outputs.changes }}
+      services: ${{ steps.filter.outputs.services }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # fetch full commit history to allow git diff HEAD~1
+          fetch-depth: 0   # important to get full commit history
 
       - name: Detect changed services
         id: filter
@@ -36,7 +36,7 @@ service-c"
           done
 
           SERVICES="[${SERVICES%?}]"
-          echo "changes=$SERVICES" >> $GITHUB_OUTPUT
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
           echo "Detected changed services: $SERVICES"
 
   build-and-test:
