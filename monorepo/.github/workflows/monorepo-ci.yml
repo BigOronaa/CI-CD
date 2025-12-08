@@ -14,28 +14,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # important to get full commit history
+          fetch-depth: 0   # fetch full commit history
 
       - name: Detect changed services
         id: filter
         run: |
-          # If HEAD~1 exists, detect changes; otherwise, assume all services changed
+          # Default all services as changed
+          SERVICES="[\"service-a\",\"service-b\",\"service-c\"]"
+
+          # Only run git diff if previous commit exists
           if git rev-parse HEAD~1 >/dev/null 2>&1; then
             CHANGES=$(git diff --name-only HEAD~1 HEAD | cut -d'/' -f1 | sort -u)
-          else
-            CHANGES="service-a
-service-b
-service-c"
+            SERVICES=""
+            for folder in service-a service-b service-c; do
+              if echo "$CHANGES" | grep -q "$folder"; then
+                SERVICES="$SERVICES\"$folder\","
+              fi
+            done
+            SERVICES="[${SERVICES%?}]"
           fi
 
-          SERVICES=""
-          for folder in service-a service-b service-c; do
-            if echo "$CHANGES" | grep -q "$folder"; then
-              SERVICES="$SERVICES\"$folder\","
-            fi
-          done
-
-          SERVICES="[${SERVICES%?}]"
           echo "services=$SERVICES" >> $GITHUB_OUTPUT
           echo "Detected changed services: $SERVICES"
 
