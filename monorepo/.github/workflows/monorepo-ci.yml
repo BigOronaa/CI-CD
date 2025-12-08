@@ -9,32 +9,34 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      services: ${{ steps.filter.outputs.services }}
+      services: ${{ steps.filter.outputs.changes }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # fetch full commit history
+          fetch-depth: 0   # fetch full history for git diff
 
       - name: Detect changed services
         id: filter
         run: |
-          # Default all services as changed
-          SERVICES="[\"service-a\",\"service-b\",\"service-c\"]"
-
-          # Only run git diff if previous commit exists
+          # If HEAD~1 exists, detect changes; otherwise, assume all services changed
           if git rev-parse HEAD~1 >/dev/null 2>&1; then
             CHANGES=$(git diff --name-only HEAD~1 HEAD | cut -d'/' -f1 | sort -u)
-            SERVICES=""
-            for folder in service-a service-b service-c; do
-              if echo "$CHANGES" | grep -q "$folder"; then
-                SERVICES="$SERVICES\"$folder\","
-              fi
-            done
-            SERVICES="[${SERVICES%?}]"
+          else
+            CHANGES="service-a
+service-b
+service-c"
           fi
 
-          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          SERVICES=""
+          for folder in service-a service-b service-c; do
+            if echo "$CHANGES" | grep -q "$folder"; then
+              SERVICES="$SERVICES\"$folder\","
+            fi
+          done
+
+          SERVICES="[${SERVICES%?}]"
+          echo "changes=$SERVICES" >> $GITHUB_OUTPUT
           echo "Detected changed services: $SERVICES"
 
   build-and-test:
@@ -50,6 +52,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20   # <-- ensures compatibility with your dependencies
 
       - name: Install dependencies
         run: npm install
