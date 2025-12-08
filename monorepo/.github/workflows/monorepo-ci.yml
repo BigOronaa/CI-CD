@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # fetch full history for git diff
+          fetch-depth: 0  # full history for git diff
 
       - name: Detect changed services
         id: filter
@@ -50,17 +50,6 @@ service-c"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20   # <-- ensures compatibility with your dependencies
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: ${{ matrix.service }}
 
       - name: Build service
         run: npm run build
