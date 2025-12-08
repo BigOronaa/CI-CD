@@ -13,11 +13,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # fetch full commit history to allow git diff HEAD~1
 
       - name: Detect changed services
         id: filter
         run: |
-          # If this is the first commit, consider all services changed
+          # If HEAD~1 exists, detect changes; otherwise, assume all services changed
           if git rev-parse HEAD~1 >/dev/null 2>&1; then
             CHANGES=$(git diff --name-only HEAD~1 HEAD | cut -d'/' -f1 | sort -u)
           else
@@ -48,6 +50,8 @@ service-c"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install dependencies
         run: npm install
