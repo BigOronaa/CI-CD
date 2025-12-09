@@ -150,3 +150,7 @@ I successfully implemented a dynamic, efficient CI/CD pipeline for a monorepo us
 
 
 ---
+
+
+**Monorepo Folder** I created a repo that hosted the Monorepo codes `YAML` 
+### Link to the repo: `https://github.com/BigOronaa/monorepo-ci-learning`
