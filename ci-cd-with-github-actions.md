@@ -1,4 +1,4 @@
-# GitHub Actions Lab Guide
+# CI/CD with GitHub Actions Lab 
 
 ## Objective
 

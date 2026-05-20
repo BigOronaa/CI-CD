@@ -1,4 +1,4 @@
-# Jenkins Critical Thinking Project 
+# Jenkins Build Test Deploy Pipeline
 
 
 ## Overview
