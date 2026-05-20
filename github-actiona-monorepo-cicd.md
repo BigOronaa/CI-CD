@@ -1,7 +1,7 @@
-# Project: Building an Efficient CI/CD Pipeline for a Monorepo
+# Building an Efficient CI/CD Pipeline for a Monorepo
 
 ## Project Overview
-I built an efficient CI/CD pipeline for a monorepo structure. The monorepo contains multiple services, each in its own folder (`service-a`, `service-b`, `service-c`). My goal was to ensure that only services affected by code changes are built, tested, and deployed, reducing build times and optimizing resource usage.
+In This Project. I built an efficient CI/CD pipeline for a monorepo structure. The monorepo contains multiple services, each in its own folder (`service-a`, `service-b`, `service-c`). My goal was to ensure that only services affected by code changes are built, tested, and deployed, reducing build times and optimizing resource usage.
 
 **Monorepo Structure Example:**
 ```
